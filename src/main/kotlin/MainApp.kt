@@ -19,10 +19,19 @@ object MainApp {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val server = startServer()
-        println("🚀 Serveur démarré sur ${BASE_URI}")
-        println("Appuie sur Entrée pour l'arrêter...")
-        System.`in`.read()
-        server.shutdownNow()
+        // 1. On récupère le PORT dynamique du serveur
+        val port = System.getenv("PORT") ?: "8080"
+
+        // 2. On écoute sur 0.0.0.0 (obligatoire pour le Cloud)
+        val baseUri = URI.create("http://0.0.0.0:$port/")
+
+        val rc = ResourceConfig(PretResource::class.java)
+        val server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc)
+
+        println("🚀 Serveur démarré sur le port $port")
+
+        // 3. IMPORTANT : Ne pas utiliser System.in.read() en production !
+        // Le serveur doit rester allumé indéfiniment.
+        Thread.currentThread().join()
     }
 }
