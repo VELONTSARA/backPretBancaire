@@ -114,7 +114,9 @@ class PretResource {
 
             pstmt?.executeUpdate()
             conn?.close()
-            Response.ok(pret).build()
+            return Response.ok("Modification effectuée avec succès")
+                .type(MediaType.TEXT_PLAIN)
+                .build()
         } catch (e: Exception) {
             Response.status(500).entity(e.message).build()
         }
