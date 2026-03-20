@@ -2,6 +2,7 @@ import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory
 import org.glassfish.jersey.server.ResourceConfig
 import java.net.URI
+import org.glassfish.jersey.jackson.JacksonFeature
 
 object MainApp {
     // Utilise "0.0.0.0" pour que ton téléphone puisse se connecter via le Wi-Fi
@@ -25,13 +26,13 @@ object MainApp {
         // 2. On écoute sur 0.0.0.0 (obligatoire pour le Cloud)
         val baseUri = URI.create("http://0.0.0.0:$port/")
 
-        val rc = ResourceConfig(PretResource::class.java)
+        val rc = ResourceConfig()
+            .register(PretResource::class.java)
+            .register(JacksonFeature::class.java) // <--- C'EST CETTE LIGNE QUI RÉPARE L'ERREUR 415
         val server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc)
 
-        println("🚀 Serveur démarré sur le port $port")
+        println("🚀 Serveur démarré sur le port $port avec support JSON")
 
-        // 3. IMPORTANT : Ne pas utiliser System.in.read() en production !
-        // Le serveur doit rester allumé indéfiniment.
         Thread.currentThread().join()
     }
 }
