@@ -1,10 +1,11 @@
-# Étape 1 : On utilise Maven pour compiler le projet
+# Étape 1 : Compilation
 FROM maven:3.8.5-openjdk-17 AS build
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Étape 2 : On utilise Java 17 pour lancer le JAR
+# Étape 2 : Exécution
 FROM openjdk:17-jdk-slim
-COPY --from=build /target/BackendPret-1.0-SNAPSHOT.jar app.jar
+# On retire le "/" devant target et on utilise l'astérisque
+COPY --from=build target/BackendPret-*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
