@@ -1,31 +1,38 @@
 import java.sql.Connection
 import java.sql.DriverManager
+import java.net.URI
 
 object DatabaseManager {
-    fun getConnection(): Connection? { // Supprimé java.sql. ici
+    fun getConnection(): Connection? {
         val dbUrl = System.getenv("DATABASE_URL")
 
         return try {
+            // Chargement du driver PostgreSQL
             Class.forName("org.postgresql.Driver")
 
             if (dbUrl != null) {
-                // On gère les deux cas : "postgres://" ou "postgresql://"
-                var jdbcUrl = dbUrl
-                if (dbUrl.startsWith("postgres://")) {
-                    jdbcUrl = dbUrl.replace("postgres://", "jdbc:postgresql://")
-                } else if (dbUrl.startsWith("postgresql://")) {
-                    jdbcUrl = dbUrl.replace("postgresql://", "jdbc:postgresql://")
-                }
-                DriverManager.getConnection(jdbcUrl)
+                // Utilisation de la classe URI pour découper l'URL de Render proprement
+                // Render donne : postgresql://user:password@hostname:port/dbname
+                val dbUri = URI(dbUrl)
+
+                val username = dbUri.userInfo.split(":")[0]
+                val password = dbUri.userInfo.split(":")[1]
+
+                // On reconstruit l'URL au format JDBC : jdbc:postgresql://hostname:port/dbname
+                val jdbcUrl = "jdbc:postgresql://" + dbUri.host + ":" + dbUri.port + dbUri.path
+
+                DriverManager.getConnection(jdbcUrl, username, password)
             } else {
-                DriverManager.getConnection( // Supprimé java.sql. ici
+                // Connexion locale pour ton ASUS
+                DriverManager.getConnection(
                     "jdbc:postgresql://localhost:5432/gestion_prets_db",
                     "postgres",
                     "BLANDIN4"
                 )
             }
         } catch (e: Exception) {
-            println("Erreur : ${e.message}")
+            println("Erreur de connexion : ${e.message}")
+            e.printStackTrace()
             null
         }
     }
